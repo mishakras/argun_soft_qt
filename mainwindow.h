@@ -2,6 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QPainter>
+#include <QVector>
+#include <QPoint>
+#include <mouse_window.h>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,6 +21,12 @@ public:
     ~MainWindow();
 
 private:
+    QVector<QPoint> points;
+    void paintEvent(QPaintEvent *event) override;
+    Mouse_window* mouse;
     Ui::MainWindow *ui;
+
+public slots:
+    void mousedraw(int x,int y);
 };
 #endif // MAINWINDOW_H
