@@ -5,6 +5,9 @@
 #include <QPainter>
 #include <QVector>
 #include <QPoint>
+#include <QTimer>
+#include <QTime>
+#include <QtMath>
 #include <mouse_window.h>
 
 
@@ -22,11 +25,13 @@ public:
 
 private:
     QVector<QPoint> points;
+    QVector<QTime> times;
     void paintEvent(QPaintEvent *event) override;
     Mouse_window* mouse;
     Ui::MainWindow *ui;
-
+    QTimer *timer;
 public slots:
-    void mousedraw(int x,int y);
+    void mouse_move_handler(int x,int y);
+    void Timer_timeout_handler();
 };
 #endif // MAINWINDOW_H
