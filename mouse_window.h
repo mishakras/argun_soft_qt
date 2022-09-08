@@ -13,13 +13,14 @@ class Mouse_window : public QWidget
 public:
     explicit Mouse_window(QWidget *parent = nullptr);
     ~Mouse_window();
+    Ui::Mouse_window *ui;
 
 public: signals:
     void sendData(int x, int y);
 
 private:
     void mouseMoveEvent(QMouseEvent *moveevent) override;
-    Ui::Mouse_window *ui;
+
 };
 
 #endif // MOUSE_WINDOW_H

@@ -7,7 +7,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->label_3->setText("Пройденный путь за 2000 миллисекунды");
-    ui->pushButton->setText("Текущий интервал = 2000");
     QAction *action;
     QMenu *main_Menu = new QMenu(this);
     action = new QAction("Загрузить настройки программы", this);
@@ -26,8 +25,9 @@ MainWindow::MainWindow(QWidget *parent)
     mouse = new Mouse_window;
     mouse->show();
     timer = new QTimer();
+    load_settings();
     connect(timer, SIGNAL(timeout()), this, SLOT(Timer_timeout_handler()));
-    timer->start(2000);
+    timer->start(time_interval);
     connect(mouse,SIGNAL(sendData(int,int)),this,SLOT(mouse_move_handler(int,int)));
 }
 
@@ -43,7 +43,7 @@ void MainWindow::mouse_move_handler(int x,int y){
     ui->lineEdit_2->setText(QString::number(y));
     points.append(QPoint(x+150,y+150));
     while(!points.isEmpty())
-        if (times[0].msecsTo(QTime::currentTime())>2000){
+        if (times[0].msecsTo(QTime::currentTime())>time_interval){
             times.removeFirst();
             points.removeFirst();
         }
@@ -57,9 +57,9 @@ void MainWindow::mouse_move_handler(int x,int y){
     update();
 }
 
-void MainWindow::paintEvent(QPaintEvent *event)
-{
+void MainWindow::paintEvent(QPaintEvent *event){
     QPainter painter(this);
+    painter.drawRect(148,148,400,300);
     if (!points.isEmpty()){
         for (int i =0; i < points.size()-1;i++){
             painter.drawLine(points[i].x(),points[i].y(),points[i+1].x(),points[i+1].y());
@@ -68,31 +68,66 @@ void MainWindow::paintEvent(QPaintEvent *event)
 }
 
 void MainWindow::Timer_timeout_handler(){
+    QtConcurrent::run(write_to_file,ui->lineEdit_3->text(),save_place);
+    update();
+    timer->start(time_interval);
+}
+
+void MainWindow::write_to_file(QString distance, QString save_place){
     QString current_time = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
     current_time.replace(":","_");
     current_time.replace("T"," ");
     current_time.replace("Z"," ");
     current_time.append(".txt");
-    QFile fileOut(current_time);
-    ui->label_4->setText(current_time);
+    QFile fileOut(save_place+current_time);
     if(fileOut.open(QIODevice::WriteOnly | QIODevice::Text)){
             QTextStream writeStream(&fileOut);
-            writeStream << ui->lineEdit_3->text();
+            writeStream << distance;
             fileOut.close();
         }
-    timer->start(2000);
 }
 
 void MainWindow::load_settings(){
-
+    time_interval = 2000;
+    save_place = "C:\\";
+    QFile fileIn("settings.txt");
+    if(fileIn.open(QIODevice::ReadOnly | QIODevice::Text)){
+            QString settings = fileIn.readAll();
+            QStringList list = settings.split('\n');
+            time_interval = list[0].toInt();
+            save_place = list[1];
+            fileIn.close();
+        }
 }
 
 void MainWindow::save_settings(){
-
+    QFile fileOut("settings.txt");
+    if(fileOut.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream writeStream(&fileOut);
+            writeStream << (QString::number(time_interval))+'\n';
+            writeStream << save_place;
+            fileOut.close();
+        }
 }
+
 void MainWindow::get_time(){
-
+    Dialog dlg("time", this );
+    switch( dlg.exec() ) {
+        case QDialog::Accepted:
+            time_interval = dlg.getInput().toInt();
+            break;
+        default:
+            break;
+    }
 }
-void MainWindow::get_save_place(){
 
+void MainWindow::get_save_place(){
+    Dialog dlg("save_place", this );
+    switch( dlg.exec() ) {
+        case QDialog::Accepted:
+            save_place = dlg.getInput();
+            break;
+        default:
+            break;
+    }
 }

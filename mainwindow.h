@@ -11,7 +11,9 @@
 #include <QtMath>
 #include <QFile>
 #include <QTextStream>
+#include <QtConcurrent/QtConcurrent>
 #include <mouse_window.h>
+#include <dialog.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -35,6 +37,7 @@ private:
     QTimer *timer;
     int time_interval;
     QString save_place;
+    static void write_to_file(QString distance, QString save_place);
 public slots:
     void mouse_move_handler(int x,int y);
     void Timer_timeout_handler();
